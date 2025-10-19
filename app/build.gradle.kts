@@ -1,25 +1,36 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
     namespace = "com.anand.smartnotes"
     compileSdk = 36
 
+    buildFeatures {
+        compose = true
+        buildConfig = true  // Add this
+    }
+
     defaultConfig {
         applicationId = "com.anand.smartnotes"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // ✅ Temporarily hardcode testing ke liye
+        buildConfigField("String", "GEMINI_API_KEY", "\"AIzaSyC5_q1fee-_liJNQ6Y0B7EZ4wPo2_MfRqs\"")
     }
 
+
     buildTypes {
+
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -35,10 +46,23 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    buildFeatures {
-        compose = true
-    }
+
+
+
+
 }
+
+secrets {
+    // BuildConfig field का naam
+    propertiesFileName = "local.properties"
+
+
+    // Optional: Ignore missing files
+    ignoreList.add("keyToIgnore")
+    ignoreList.add("sdk.*")
+}
+
+
 
 dependencies {
 
@@ -53,6 +77,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
+    implementation(libs.androidx.room.common.jvm)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,5 +93,19 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
+
+    // ML Kit Text Recognition
+    implementation("com.google.mlkit:text-recognition:16.0.0")
+
+    // Gemini AI
+    implementation("com.google.ai.client.generativeai:generativeai:0.1.2")
+
+    // Image loading
+    implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // Firebase Storage
+    implementation("com.google.firebase:firebase-storage-ktx")
+
+
 
 }

@@ -1,8 +1,25 @@
 package com.anand.smartnotes.data.dataclasses
 
+import androidx.room.PrimaryKey
+
 data class Note(
     val id: String = "",
-    val title: String = "",
-    val content: String = "",
+    val userId: String = "",
+    val userName: String = "",
+    val university: String = "",
+    val program: String = "",
+    val semester: String = "",
+
+    // Image & Text
+    val imageUrl: String = "",
+    val extractedText: String = "",
+
+    // AI Generated Content
+    val summary: List<String> = emptyList(),
+    val questions: List<QuestionAnswer> = emptyList(),
+    val answers: List<String> = emptyList(),
+    val topic: String = "",
+    val syllabusChapter: String = "",
+
     val timestamp: Long = System.currentTimeMillis()
 )
