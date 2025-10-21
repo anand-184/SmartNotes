@@ -4,6 +4,7 @@ import com.anand.smartnotes.data.dataclasses.Class
 import com.anand.smartnotes.data.dataclasses.Student
 import com.anand.smartnotes.data.dataclasses.University
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.auth.User
 import kotlinx.coroutines.tasks.await
 
 class StudentRepository {
@@ -46,4 +47,5 @@ class StudentRepository {
             Result.failure(e)
         }
     }
+
 }

@@ -14,6 +14,19 @@ class AuthRepository {
         return auth.currentUser
     }
 
+    suspend fun getCurrentUserData(): User? {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+            val docSnap = FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .get()
+                .await()
+            return docSnap.toObject(User::class.java)
+        }
+        return null
+    }
+
     suspend fun registerUser(
         userEmail: String,
         password: String,

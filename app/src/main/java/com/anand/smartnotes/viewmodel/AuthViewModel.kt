@@ -2,7 +2,9 @@ package com.anand.smartnotes.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anand.smartnotes.data.dataclasses.User
 import com.anand.smartnotes.data.repositories.AuthRepository
+import com.google.firebase.auth.FirebaseUser
 import com.google.rpc.context.AttributeContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,9 +23,10 @@ class AuthViewModel:ViewModel() {
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState
 
-    fun isUserLoggedIn():Boolean{
-        return authRepository.getCurrentUser()!=null
+    fun getUser(): FirebaseUser?{
+        return authRepository.getCurrentUser()
     }
+
     fun register(userEmail: String, password: String, confirmPassword:String,userName: String, university: String,
                  program: String, semester: String)
     {

@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.room.common.jvm)
+    implementation(libs.androidx.benchmark.traceprocessor.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -102,9 +103,14 @@ dependencies {
 
     // Image loading
     implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+
 
     // Firebase Storage
     implementation("com.google.firebase:firebase-storage-ktx")
+
+    implementation ("com.cloudinary:cloudinary-android:3.0.2")
+
 
 
 

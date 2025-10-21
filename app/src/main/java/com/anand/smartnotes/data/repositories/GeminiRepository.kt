@@ -3,6 +3,8 @@ package com.anand.smartnotes.data.repositories
 
 
 
+import android.text.TextUtils.replace
+import android.util.Log
 import com.anand.smartnotes.BuildConfig
 import com.anand.smartnotes.data.dataclasses.QuestionAnswer
 import com.google.ai.client.generativeai.GenerativeModel
@@ -23,7 +25,7 @@ data class AIResponse(
 class GeminiRepository{
 
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-1.5-flash",
+        modelName = "gemini-2.0-flash-001",
         apiKey = BuildConfig.GEMINI_API_KEY,
         generationConfig = generationConfig {
             temperature = 0.7f
@@ -102,10 +104,19 @@ Return ONLY valid JSON, no additional text.
 
             val response = generativeModel.generateContent(prompt)
             val jsonText = response.text ?: throw Exception("Empty response from AI")
+                        Log.d("AI_RAW_RESPONSE", jsonText)
+            val cleanJson = jsonText
+                .replace("```json", "", ignoreCase = true)
+                .replace("```", "")
+                .replace("'''", "")
+                .trim()
 
-            // Parse JSON response
-            val aiResponse = parseAIResponse(jsonText)
-            Result.success(aiResponse)
+
+            val aiResponse = parseAIResponse(cleanJson)
+            return Result.success(aiResponse)
+
+
+
 
         } catch (e: Exception) {
             Result.failure(e)
@@ -114,8 +125,9 @@ Return ONLY valid JSON, no additional text.
 
     private fun parseAIResponse(jsonText: String): AIResponse {
         // Clean JSON (remove markdown code blocks if present)
+        val json = JSONObject(jsonText)
         val cleanJson=jsonText.replace("'''","").trim()
-        val json = JSONObject(cleanJson)
+
 
 
         // Parse summary

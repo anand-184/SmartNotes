@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
+import com.anand.smartnotes.data.cloud.CloudinaryManager
 import com.anand.smartnotes.ui.theme.DeepNavy
 import com.anand.smartnotes.ui.theme.LightText
 import com.anand.smartnotes.ui.theme.SmartNotesTheme
@@ -38,14 +39,18 @@ import com.google.firebase.firestore.FirebaseFirestoreSettings
 
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Firebase.initialize(this)
+        CloudinaryManager.init(this)
+
         val firestore = FirebaseFirestore.getInstance()
         val settings = FirebaseFirestoreSettings.Builder()
             .setPersistenceEnabled(true)  // ✅ Offline support enable
             .build()
         firestore.firestoreSettings = settings
+
         enableEdgeToEdge()
         setContent {
             SmartNotesTheme {
