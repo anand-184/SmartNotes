@@ -2,6 +2,7 @@ package com.anand.smartnotes.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.anand.smartnotes.MainActivity
 import com.anand.smartnotes.data.dataclasses.User
 import com.anand.smartnotes.data.repositories.AuthRepository
 import com.google.firebase.auth.FirebaseUser
@@ -28,7 +29,7 @@ class AuthViewModel:ViewModel() {
     }
 
     fun register(userEmail: String, password: String, confirmPassword:String,userName: String, university: String,
-                 program: String, semester: String)
+                 program: String, semester: String, batch: String)
     {
         if (userEmail.isEmpty() || password.isEmpty() || userName.isEmpty() || university.isEmpty()
             || program.isEmpty() || semester.isEmpty()) {
@@ -46,7 +47,7 @@ class AuthViewModel:ViewModel() {
 
         viewModelScope.launch {
             _authState.value=AuthState.Loading
-            authRepository.registerUser(userEmail,password,userName,university,program,semester).onSuccess {
+            authRepository.registerUser(userEmail,password,userName,university,program,semester,batch).onSuccess {
                 _authState.value=AuthState.Success("User Registered Successfully")
             }.onFailure {
                 _authState.value=AuthState.Error(it.message?:"Unknown Error")

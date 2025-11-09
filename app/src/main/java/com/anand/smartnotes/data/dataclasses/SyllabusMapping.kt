@@ -5,6 +5,7 @@ data class SyllabusMapping(
     val university: String = "",
     val program: String = "",
     val semester: String = "",
+    val batch: String = "",
     val syllabusUrl: String = "",
     val topics: List<String> = emptyList()
 )

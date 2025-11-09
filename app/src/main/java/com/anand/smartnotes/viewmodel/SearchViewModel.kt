@@ -34,7 +34,7 @@ class SearchViewModel : ViewModel() {
 
     private val geminiRepository = GeminiRepository()
     private val firestore = FirebaseFirestore.getInstance()
-    private val authRepository=AuthRepository()
+    private val authRepository = AuthRepository()
 
     private val _uploadState = MutableStateFlow<GeminiUiState>(GeminiUiState.Idle)
     val uploadState: StateFlow<GeminiUiState> = _uploadState.asStateFlow()
@@ -55,10 +55,11 @@ class SearchViewModel : ViewModel() {
         university: String,
         program: String,
         semester: String,
+        batch: String,
         imageUri: Uri,
         context: Context
     ) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
 
                 _uploadState.value = GeminiUiState.Processing("Uploading image...")
@@ -75,7 +76,8 @@ class SearchViewModel : ViewModel() {
                             cont.resume(Unit) {}
                         },
                         onError = { throwable ->
-                            _uploadState.value = GeminiUiState.Error(throwable.message ?: "Upload failed")
+                            _uploadState.value =
+                                GeminiUiState.Error(throwable.message ?: "Upload failed")
                             _isImageUploaded.value = false
                             cont.resume(Unit) {}
                         }
@@ -87,35 +89,28 @@ class SearchViewModel : ViewModel() {
                 val extractedText = extractTextFromImage(imageUri, context)
                 if (extractedText.isBlank()) throw Exception("No text found in image")
 
+                Log.d("extractedText", extractedText)
 
-
-                _uploadState.value = GeminiUiState.Processing("Fetching syllabus...")
-                val programFixed = program.replace(" ", "_").trim()
-                val universityFixed = university.trim()
-                val semesterFixed = semester.trim()
-                val syllabusKey = "${universityFixed}_${programFixed}_$semesterFixed"
-
-                Log.d("syllabusKey", "syllabusKey = [$syllabusKey]")
-                Log.d("syllabusKey", "university=[$universityFixed], program=[$programFixed], semester=[$semesterFixed]")
-
-
-// For "PTU", "BTech CSE", "2" --> syllabusKey = "PTU_BTech_CSE_2"
-
-                val syllabusDoc = firestore.collection("syllabusMapping")
-                    .document(syllabusKey)
-                    .get().await()
-                val syllabusUrl = syllabusDoc.getString("syllabusUrl") ?: throw Exception("Syllabus not found")
 
                 _uploadState.value = GeminiUiState.Processing("Analyzing with AI...")
                 geminiRepository.generateSummaryAndQuestions(
-                    extractedText, syllabusUrl, university, program, semester
+                    extractedText, university, program, semester, batch
                 ).onSuccess { aiResponse ->
                     val note = createNoteFromAIResponse(
-                        aiResponse, userId, userName, university, program, semester, imageUrl, extractedText
+                        aiResponse,
+                        userId,
+                        userName,
+                        university,
+                        program,
+                        semester,
+                        batch,
+                        imageUrl,
+                        extractedText
                     )
                     _uploadState.value = GeminiUiState.Processing("Saving note...")
                     val docRef = firestore.collection("notes").add(note).await()
-                    firestore.collection("notes").document(docRef.id).update("id", docRef.id).await()
+                    firestore.collection("notes").document(docRef.id).update("id", docRef.id)
+                        .await()
                     _aiResult.value = buildString {
                         append("Summary:\n")
                         aiResponse.summary.forEach { append("• $it\n") }
@@ -145,6 +140,7 @@ class SearchViewModel : ViewModel() {
         program: String,
         semester: String,
         imageUrl: String,
+        batch: String,
         extractedText: String
     ): Note {
         return Note(
@@ -154,6 +150,7 @@ class SearchViewModel : ViewModel() {
             university = university,
             program = program,
             semester = semester,
+            batch = batch,
             imageUrl = imageUrl,
             extractedText = extractedText,
             summary = aiResponse.summary,

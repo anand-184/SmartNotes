@@ -8,4 +8,6 @@ data class User(
     val university: String = "",
     val program: String = "",
     val semester: String = "",
+    val batch: String = "",
+
 )

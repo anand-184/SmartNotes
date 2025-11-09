@@ -9,6 +9,9 @@ data class Note(
     val university: String = "",
     val program: String = "",
     val semester: String = "",
+    val batch: String = "",
+    val syllabusKey: String = "", // "PTU_BTech_CSE_Sem7"
+
 
     // Image & Text
     val imageUrl: String = "",

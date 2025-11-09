@@ -99,7 +99,7 @@ fun ContentScreen(modifier: Modifier,selectedIndex: Int){
         0->HomeScreen()
         1->SearchScreen()
         2->NotesListScreen()
-        3-> ProfileScreen()
+        3-> ProfileScreen(onLogout = {})
 
 
     }

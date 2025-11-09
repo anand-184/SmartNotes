@@ -1,5 +1,6 @@
 package com.anand.smartnotes
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -19,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -67,6 +70,8 @@ fun RegisterScreen(
     var selectedUni by remember { mutableStateOf("Select University") }
     var selectedClass by remember { mutableStateOf("Select Class") }
     var selectedSem by remember { mutableStateOf("Select Semester") }
+    var selectedBatch by remember { mutableStateOf("Select Batch") }
+
     val authState by viewModel.authState.collectAsState()
 
     LaunchedEffect(authState) {
@@ -98,12 +103,15 @@ fun RegisterScreen(
                 onValueChange = { userId = it },
                 label = { Text("User ID", color = LightText) },
                 modifier = Modifier.fillMaxWidth(),
+                textStyle = TextStyle(color = Color.White), // Input text color here
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.White,
                     unfocusedBorderColor = Color.White,
                     focusedLabelColor = Color.LightGray,
-                    unfocusedLabelColor = Color.White
-            ))
+                    unfocusedLabelColor = Color.White,
+                )
+            )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -112,11 +120,13 @@ fun RegisterScreen(
                 onValueChange = { name = it },
                 label = { Text("Name", color = LightText) },
                 modifier = Modifier.fillMaxWidth(),
+                textStyle = TextStyle(color = Color.White),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.White,
                     unfocusedBorderColor = Color.White,
                     focusedLabelColor = Color.LightGray,
-                    unfocusedLabelColor = Color.White
+                    unfocusedLabelColor = Color.White,
+
             )
             )
 
@@ -127,6 +137,7 @@ fun RegisterScreen(
                 onValueChange = { password = it },
                 label = { Text("Password", color = LightText) },
                 modifier = Modifier.fillMaxWidth(),
+                textStyle = TextStyle(color = Color.White),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.White,
                     unfocusedBorderColor = Color.White,
@@ -141,6 +152,7 @@ fun RegisterScreen(
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
                 label = { Text("Confirm Password", color = LightText) },
+                textStyle = TextStyle(color = Color.White),
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color.White,
@@ -171,7 +183,7 @@ fun RegisterScreen(
                             Icon(
                                 imageVector = Icons.Default.ArrowDropDown,
                                 contentDescription = "Dropdown",
-                                modifier = Modifier.clickable { expanded = true }
+                                modifier = Modifier.clickable { expanded = true },
                             )
                         },
                         modifier = Modifier
@@ -203,7 +215,7 @@ fun RegisterScreen(
                 }
             }
 
-            val universities = listOf("IKJPTU", "GNDU")
+            val universities = listOf("PTU", "GNDU")
             SpinnerField("University", universities, selectedUni) { selectedUni = it }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -216,7 +228,12 @@ fun RegisterScreen(
             val semesters = listOf("Semester 1", "Semester 2", "Semester 3", "Semester 4")
             SpinnerField("Semester", semesters, selectedSem) { selectedSem = it }
 
+            val batches = listOf("2022-26","2023-27","2024-28","2025-29")
+            SpinnerField("Batch", batches, selectedBatch) { selectedBatch = it }
+
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Bottom-aligned Section (Button + Login Text)
         Column(
@@ -231,8 +248,10 @@ fun RegisterScreen(
                 onClick = {
                     viewModel.register(
                         userId, password, confirmPassword,
-                        name, selectedUni, selectedClass, selectedSem
+                        name, selectedUni, selectedClass, selectedSem,selectedBatch
                     )
+
+
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(

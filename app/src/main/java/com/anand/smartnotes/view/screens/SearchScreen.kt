@@ -48,8 +48,10 @@ import com.anand.smartnotes.ui.theme.LightText
 import android.Manifest
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import com.anand.smartnotes.data.repositories.AuthRepository
@@ -87,6 +89,7 @@ fun SearchScreen() {
                     university = user.university,
                     program = user.program,
                     semester = user.semester,
+                    batch = user.batch,
                     imageUri = it,
                     context = context
 
@@ -108,6 +111,7 @@ fun SearchScreen() {
                         university = user.university,
                         program = user.program,
                         semester = user.semester,
+                        batch = user.batch,
                         imageUri = uri,
                         context = context
 
@@ -133,28 +137,37 @@ fun SearchScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(16.dp).background(DeepNavy)
     ) {
 
         // Upload row
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Button(onClick = { showDialog = true }) {
-                Text("📸 Upload Photo")
+        Column() {
+            Button(onClick = { showDialog = true }, modifier = Modifier.
+            fillMaxWidth(1f).
+            padding(horizontal = 20.dp,vertical = 20.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White)) {
+                Text("📸 Upload Photo", color = DeepNavy, fontFamily = FontFamily.SansSerif,
+                    fontSize = 20.sp)
             }
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            Checkbox(
-                checked = isImageUploaded,
-                onCheckedChange = null,
-                colors = CheckboxDefaults.colors(checkedColor = DeepNavy)
-            )
+            Row(verticalAlignment = Alignment.CenterVertically){
 
-            Text(
-                text = if (isImageUploaded) "Uploaded" else "Not Uploaded",
-                color = LightText,
-                fontSize = 14.sp
-            )
+                Checkbox(
+                    checked = isImageUploaded,
+                    onCheckedChange = null,
+                    colors = CheckboxDefaults.colors(checkedColor = DeepNavy)
+                )
+
+                Text(
+                    text = if (isImageUploaded) "Uploaded" else "Not Uploaded",
+                    color = LightText,
+                    fontSize = 14.sp
+                )
+
+            }
+
         }
 
         Spacer(modifier = Modifier.height(16.dp))

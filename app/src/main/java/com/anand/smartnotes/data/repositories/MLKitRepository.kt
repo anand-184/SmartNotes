@@ -30,5 +30,6 @@ class MLKitRepository(var context: Context){
     suspend fun ImageUploaded(imageUri: Uri){
 
 
+
     }
 }

@@ -7,6 +7,7 @@ import android.text.TextUtils.replace
 import android.util.Log
 import com.anand.smartnotes.BuildConfig
 import com.anand.smartnotes.data.dataclasses.QuestionAnswer
+import com.anand.smartnotes.data.dataclasses.University
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.HarmCategory
@@ -43,68 +44,60 @@ class GeminiRepository{
 
     suspend fun generateSummaryAndQuestions(
         extractedText: String,
-        syllabusUrl: String,
         university: String,
         program: String,
-        semester: String
+        semester: String,
+        batch: String
     ): Result<AIResponse> {
         return try {
             val prompt = """
-You are an educational AI assistant for $university - $program - $semester students.
+                You are a highly intelligent educational AI assistant working with student notes.
 
-Reference Syllabus PDF: $syllabusUrl
-(Read and understand the syllabus topics from this URL)
+                Student context:
+                - University: $university
+                - Program: $program
+                - Semester: $semester
+                - Batch: $batch
 
-Student's handwritten notes (OCR extracted):
-"$extractedText"
+                Instructions:
+                1. Based on the student's university, program, semester, and batch, autonomously locate the official syllabus curriculum for that combination by searching the official university websites or databases accessible to you.
+                2. Thoroughly analyze the identified syllabus topics, units, and chapters.
+                3. Analyze the student's handwritten notes (OCR extracted text below):
+                   "$extractedText"
+                4. Determine if the notes content is relevant and belongs to any of the syllabus topics found.
+                5. If the content is relevant (matchFound = true):
+                   - Identify main matched topics and syllabus chapters.
+                   - Generate 5-7 concise summary points aligned strictly with the syllabus.
+                   - Create 5 relevant exam-style questions and answers based on matched topics.
+                6. If irrelevant or no syllabus match is found (matchFound = false):
+                   - Respond that the uploaded content does not correspond to the identified syllabus.
+                   - Provide a brief summary of the uploaded note content only.
+                   - Do not generate exam questions.
+                7. Return ONLY structured JSON in this format:
 
-Tasks:
-1. Identify the main TOPIC from the notes 
-2. Find which CHAPTER/UNIT from the syllabus this topic belongs to
-3. Create a SUMMARY of the notes in 10-12 bullet points
-4. Generate 5 EXAM-STYLE QUESTIONS with detailed answers based on syllabus topics
+                {
+                  "matchFound": true | false,
+                  "message": "If false, provide this message explaining no syllabus match was found.",
+                  "topic": "Matched topic or null",
+                  "syllabusChapter": "Matched chapter or null",
+                  "summary": [
+                    "Summary bullet 1",
+                    "Summary bullet 2",
+                    ...
+                  ],
+                  "questions": [
+                    {"question": "...", "answer": "..."},
+                    ...
+                  ]
+                }
 
-Return response in this EXACT JSON format:
-{
-  "topic": "Main topic name",
-  "syllabusChapter": "Unit/Chapter name from syllabus",
-  "summary": [
-    "Summary point 1",
-    "Summary point 2",
-    "Summary point 3",
-    "Summary point 4",
-    "Summary point 5"
-  ],
-  "questions": [
-    {
-      "question": "Question 1?",
-      "answer": "Detailed answer 1"
-    },
-    {
-      "question": "Question 2?",
-      "answer": "Detailed answer 2"
-    },
-    {
-      "question": "Question 3?",
-      "answer": "Detailed answer 3"
-    },
-    {
-      "question": "Question 4?",
-      "answer": "Detailed answer 4"
-    },
-    {
-      "question": "Question 5?",
-      "answer": "Detailed answer 5"
-    }
-  ]
-}
+                Return ONLY valid JSON. Do NOT ask for the syllabus URL or include it in your prompt input.
 
-Return ONLY valid JSON, no additional text.
             """.trimIndent()
 
             val response = generativeModel.generateContent(prompt)
             val jsonText = response.text ?: throw Exception("Empty response from AI")
-                        Log.d("AI_RAW_RESPONSE", jsonText)
+            Log.d("AI_RAW_RESPONSE", jsonText)
             val cleanJson = jsonText
                 .replace("```json", "", ignoreCase = true)
                 .replace("```", "")

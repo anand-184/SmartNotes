@@ -33,10 +33,11 @@ class AuthRepository {
         userName: String,
         university: String,
         program: String,
-        semester: String
+        semester: String,
+        batch: String
     ): Result<FirebaseUser> {
         return try {
-            val authResult = auth?.createUserWithEmailAndPassword(userEmail, password)?.await()
+            val authResult = auth.createUserWithEmailAndPassword(userEmail, password).await()
             val firebaseUser = authResult?.user!!
 
             val user = User(
@@ -46,7 +47,8 @@ class AuthRepository {
                 userName = userName,
                 university = university,
                 program = program,
-                semester = semester
+                semester = semester,
+                batch = batch
             )
             firestore.collection("users")
                 .document(firebaseUser.uid)
