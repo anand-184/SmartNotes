@@ -1,5 +1,6 @@
 package com.anand.smartnotes.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.anand.smartnotes.data.dataclasses.User
@@ -35,6 +36,7 @@ class ProfileViewModel : ViewModel() {
             return
         }
 
+
         viewModelScope.launch {
             _uiState.value = ProfileUiState.Loading
             val result = repository.getUser(userId)
@@ -42,6 +44,76 @@ class ProfileViewModel : ViewModel() {
                 onSuccess = { ProfileUiState.Success(it) },
                 onFailure = { ProfileUiState.Error(it.message ?: "Failed to load profile") }
             )
+        }
+    }
+
+    fun updateUserName(name: String) {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            viewModelScope.launch {
+                val user = (uiState.value as? ProfileUiState.Success)?.user
+                if (user != null) {
+                    val updatedUser = user.copy(userName = name)
+                    repository.updateUser(updatedUser)
+                    _uiState.value = ProfileUiState.Success(updatedUser)
+                }
+            }
+        }
+    }
+
+    fun updateUniversity(university: String) {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            viewModelScope.launch {
+                val user = (uiState.value as? ProfileUiState.Success)?.user
+                if (user != null) {
+                    val updatedUser = user.copy(university = university)
+                    repository.updateUser(updatedUser)
+                    _uiState.value = ProfileUiState.Success(updatedUser)
+                }
+            }
+        }
+    }
+
+    fun updateProgram(program: String) {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            viewModelScope.launch {
+                val user = (uiState.value as? ProfileUiState.Success)?.user
+                if (user != null) {
+                    val updatedUser = user.copy(program = program)
+                    repository.updateUser(updatedUser)
+                    _uiState.value = ProfileUiState.Success(updatedUser)
+                }
+            }
+        }
+    }
+
+    fun updateBatch(batch: String) {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            viewModelScope.launch {
+                val user = (uiState.value as? ProfileUiState.Success)?.user
+                if (user != null) {
+                    val updatedUser = user.copy(batch = batch)
+                    repository.updateUser(updatedUser)
+                    _uiState.value = ProfileUiState.Success(updatedUser)
+                }
+            }
+        }
+    }
+
+    fun updateSemester(semester: String) {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            viewModelScope.launch {
+                val user = (uiState.value as? ProfileUiState.Success)?.user
+                if (user != null) {
+                    val updatedUser = user.copy(semester = semester)
+                    repository.updateUser(updatedUser)
+                    _uiState.value = ProfileUiState.Success(updatedUser)
+                }
+            }
         }
     }
 

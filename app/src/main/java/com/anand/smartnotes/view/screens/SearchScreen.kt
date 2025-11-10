@@ -1,7 +1,7 @@
 package com.anand.smartnotes.view.screens
 
-import androidx.lifecycle.viewmodel.compose.viewModel
 import SearchViewModel
+import android.Manifest
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
@@ -9,55 +9,45 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.CheckboxDefaults.colors
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.anand.smartnotes.data.repositories.AuthRepository
+import com.anand.smartnotes.ui.theme.BrightYellow
+import com.anand.smartnotes.ui.theme.DarkGrayishBlue
 import com.anand.smartnotes.ui.theme.DeepNavy
 import com.anand.smartnotes.ui.theme.LightText
-import android.Manifest
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.ViewModel
-import com.anand.smartnotes.data.repositories.AuthRepository
+import com.anand.smartnotes.ui.theme.SkyBlue
 import com.anand.smartnotes.viewmodel.AuthViewModel
 
 
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun SearchScreen() {
     val authViewModel: AuthViewModel = viewModel()
@@ -72,6 +62,8 @@ fun SearchScreen() {
     var showDialog by remember { mutableStateOf(false) }
     var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
     val currentUser by viewModel.currentUser.collectAsState()
+
+    val isProcessing = uploadState is GeminiUiState.Processing
 
     LaunchedEffect(Unit) {
         viewModel.fetchCurrentUser()
@@ -92,10 +84,8 @@ fun SearchScreen() {
                     batch = user.batch,
                     imageUri = it,
                     context = context
-
                 )
             }
-
         }
     }
 
@@ -114,11 +104,9 @@ fun SearchScreen() {
                         batch = user.batch,
                         imageUri = uri,
                         context = context
-
                     )
                 }
-
-           }
+            }
         }
     }
 
@@ -133,162 +121,424 @@ fun SearchScreen() {
         }
     }
 
-    // ---------------- UI Layout ----------------
-    Column(
+    // ---------------- Enhanced UI Layout ----------------
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp).background(DeepNavy)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(DeepNavy, DarkGrayishBlue)
+                )
+            )
     ) {
-
-        // Upload row
-        Column() {
-            Button(onClick = { showDialog = true }, modifier = Modifier.
-            fillMaxWidth(1f).
-            padding(horizontal = 20.dp,vertical = 20.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White)) {
-                Text("📸 Upload Photo", color = DeepNavy, fontFamily = FontFamily.SansSerif,
-                    fontSize = 20.sp)
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically){
-
-                Checkbox(
-                    checked = isImageUploaded,
-                    onCheckedChange = null,
-                    colors = CheckboxDefaults.colors(checkedColor = DeepNavy)
-                )
-
-                Text(
-                    text = if (isImageUploaded) "Uploaded" else "Not Uploaded",
-                    color = LightText,
-                    fontSize = 14.sp
-                )
-
-            }
-
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Status text
-        when (uploadState) {
-            is GeminiUiState.Idle -> Text("Idle", color = LightText)
-            is GeminiUiState.Processing -> Text(
-                (uploadState as GeminiUiState.Processing).message,
-                color = LightText
-            )
-            is GeminiUiState.Error -> Text(
-                (uploadState as GeminiUiState.Error).message,
-                color = LightText
-            )
-
-            is GeminiUiState.Success -> {
-                val aiResponse = (uploadState as GeminiUiState.Success).aiResponse
+        // Header Section
+        item {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(80.dp)
+                        .background(
+                            color = SkyBlue.copy(alpha = 0.1f),
+                            shape = CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Face,
+                        contentDescription = "AI Analysis",
+                        tint = SkyBlue,
+                        modifier = Modifier.size(40.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
-                    text = "✅ AI Analysis Completed",
-                    fontSize = 18.sp,
-                    color = DeepNavy,
-                    fontFamily = FontFamily.Serif
+                    text = "AI Notes Analyzer",
+                    color = LightText,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Upload your notes and get instant AI-powered insights",
+                    color = LightText.copy(alpha = 0.7f),
+                    fontSize = 14.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+        }
 
-                Column (modifier = Modifier.fillMaxWidth().padding(8.dp).verticalScroll(rememberScrollState()))
-                {
-
-
-                    // --- Summary Section ---
-                    Text(
-                        text = "Summary",
-                        fontSize = 20.sp,
-                        color = DeepNavy,
-                        fontFamily = FontFamily.Serif
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Column(
+        // Upload Card Section
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 8.dp)
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(20.dp),
+                        clip = true
+                    ),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = DarkGrayishBlue)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Upload Button
+                    Button(
+                        onClick = { showDialog = true },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = SkyBlue,
+                            contentColor = DeepNavy
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 8.dp,
+                            pressedElevation = 4.dp
+                        )
                     ) {
-                        aiResponse.summary.forEach { point ->
-                            Text("• $point", fontSize = 15.sp, color = LightText)
-                        }
+                        Icon(
+                            Icons.Default.Done,
+                            contentDescription = "Upload",
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            "Upload Photo Notes",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // --- Q&A Section ---
-                    Text(
-                        text = "Questions & Answers",
-                        fontSize = 20.sp,
-                        color = DeepNavy,
-                        fontFamily = FontFamily.Serif
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    aiResponse.questions.forEachIndexed { i, qa ->
-                        Column(modifier = Modifier.padding(vertical = 6.dp)) {
-                            Text("${i + 1}. Q: ${qa.question}", color = LightText, fontSize = 15.sp)
-                            Text("   A: ${qa.answer}", color = LightText, fontSize = 14.sp)
+                    // Upload Status
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        val animatedAlpha by animateFloatAsState(
+                            targetValue = if (isImageUploaded) 1f else 0.5f,
+                            label = "statusAlpha"
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .background(
+                                    color = if (isImageUploaded) BrightYellow else LightText.copy(alpha = 0.3f),
+                                    shape = CircleShape
+                                )
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = if (isImageUploaded) "✓ Notes Uploaded Successfully" else "Waiting for upload...",
+                            color = LightText.copy(alpha = animatedAlpha),
+                            fontSize = 14.sp,
+                            fontWeight = if (isImageUploaded) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        }
+
+        // Processing State
+        if (isProcessing) {
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = SkyBlue.copy(alpha = 0.1f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            color = SkyBlue,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = (uploadState as GeminiUiState.Processing).message,
+                            color = LightText,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        }
+
+        // Results Section
+        when (uploadState) {
+            is GeminiUiState.Success -> {
+                val aiResponse = (uploadState as GeminiUiState.Success).aiResponse
+
+                // Success Header
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = BrightYellow.copy(alpha = 0.1f))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(
+                                        color = BrightYellow.copy(alpha = 0.2f),
+                                        shape = CircleShape
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("✅", fontSize = 18.sp)
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "AI Analysis Completed",
+                                color = BrightYellow,
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
-
-
                 }
 
+                // Summary Section
+                item {
+                    AnalysisSection(
+                        title = "📝 Summary",
+                        content = aiResponse.summary,
+                        accentColor = SkyBlue,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
+
+                // Q&A Section
+                item {
+                    AnalysisSection(
+                        title = "❓ Questions & Answers",
+                        content = aiResponse.questions.mapIndexed { i, qa ->
+                            "Q${i + 1}: ${qa.question}\nA: ${qa.answer}"
+                        },
+                        accentColor = BrightYellow,
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
+                    )
+                }
+
+                // Add some bottom padding
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
             }
 
-            else -> {}
+            is GeminiUiState.Error -> {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFEE2E2))
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("⚠️", fontSize = 24.sp)
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = (uploadState as GeminiUiState.Error).message,
+                                color = Color(0xFFDC2626),
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                }
+            }
+
+            else -> {
+                // Idle state - no additional content
+            }
         }
     }
 
-    // --------------- Dialog ----------------
+    // --------------- Enhanced Dialog ----------------
     if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Choose Image Source") },
-            text = {
-                Column {
+        Dialog(onDismissRequest = { showDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = DarkGrayishBlue)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp)
+                ) {
                     Text(
-                        text = "Camera",
+                        text = "Choose Image Source",
+                        color = LightText,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    // Camera Option
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
                                 showDialog = false
                                 cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                             }
-                            .padding(12.dp)
-                    )
-                    Text(
-                        text = "Gallery",
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    color = SkyBlue.copy(alpha = 0.1f),
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.ArrowDropDown,
+                                contentDescription = "Camera",
+                                tint = SkyBlue
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Take Photo",
+                            color = LightText,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    // Gallery Option
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
                                 showDialog = false
                                 galleryLauncher.launch("image/*")
                             }
-                            .padding(12.dp)
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .background(
+                                    color = BrightYellow.copy(alpha = 0.1f),
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.ArrowDropDown,
+                                contentDescription = "Gallery",
+                                tint = BrightYellow
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Choose from Gallery",
+                            color = LightText,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AnalysisSection(
+    title: String,
+    content: List<String>,
+    accentColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 8.dp,
+                shape = RoundedCornerShape(16.dp),
+                clip = true
+            ),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = DarkGrayishBlue)
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = title,
+                color = accentColor,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                content.forEach { item ->
+                    Text(
+                        text = "• $item",
+                        color = LightText,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp
                     )
                 }
-            },
-            confirmButton = {}
-        )
+            }
+        }
     }
 }
 
 fun createImageUri(context: Context): Uri {
-    val contentValues = ContentValues().apply{ put(MediaStore.Images.Media.DISPLAY_NAME,
-        "temp_${System.currentTimeMillis()}.jpg")
-        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg") }
-    return context.contentResolver.insert( MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues )!! }
-
+    val contentValues = ContentValues().apply {
+        put(MediaStore.Images.Media.DISPLAY_NAME, "temp_${System.currentTimeMillis()}.jpg")
+        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+    }
+    return context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)!!
+}
 
 @Preview
 @Composable
 fun PreviewSearchScreen() {
     SearchScreen()
 }
-

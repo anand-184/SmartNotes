@@ -1,7 +1,8 @@
 package com.anand.smartnotes.data.dataclasses
 
-import androidx.room.PrimaryKey
-
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+@Parcelize
 data class Note(
     val id: String = "",
     val userId: String = "",
@@ -9,8 +10,7 @@ data class Note(
     val university: String = "",
     val program: String = "",
     val semester: String = "",
-    val batch: String = "",
-    val syllabusKey: String = "", // "PTU_BTech_CSE_Sem7"
+    val batch: String = "", // "PTU_BTech_CSE_Sem7"
 
 
     // Image & Text
@@ -25,4 +25,4 @@ data class Note(
     val syllabusChapter: String = "",
 
     val timestamp: Long = System.currentTimeMillis()
-)
+): Parcelable

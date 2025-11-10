@@ -17,4 +17,16 @@ class UserRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun updateUser(user: User): Result<Unit> {
+        return try {
+            firestore.collection("users")
+                .document(user.id)
+                .set(user)
+                .await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

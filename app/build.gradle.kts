@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
+    id ("kotlin-parcelize")
 }
 
 android {
@@ -19,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "com.anand.smartnotes"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -110,6 +111,8 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
 
     implementation ("com.cloudinary:cloudinary-android:3.0.2")
+
+    implementation ("androidx.navigation:navigation-compose:2.7.7")
 
 
 
