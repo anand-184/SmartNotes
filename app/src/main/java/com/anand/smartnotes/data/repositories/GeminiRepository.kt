@@ -26,7 +26,7 @@ data class AIResponse(
 class GeminiRepository{
 
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-2.0-flash-001",
+        modelName = "gemini-1.5-flash-lite",
         apiKey = BuildConfig.GEMINI_API_KEY,
         generationConfig = generationConfig {
             temperature = 0.7f

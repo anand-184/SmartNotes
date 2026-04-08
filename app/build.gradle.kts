@@ -26,7 +26,7 @@ android {
         versionName = "1.0"
 
         // ✅ Temporarily hardcode testing ke liye
-        buildConfigField("String", "GEMINI_API_KEY", "\"AIzaSyC5_q1fee-_liJNQ6Y0B7EZ4wPo2_MfRqs\"")
+        buildConfigField("String", "GEMINI_API_KEY", "AIzaSyBZF4rWf2gyi0TbzJx0fWHduEx2xEhW1JI")
     }
 
 
